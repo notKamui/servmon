@@ -10,6 +10,12 @@ Install (or update) using curl:
 curl -fsSL https://servmon.notkamui.com/install.sh | sh
 ```
 
+or 
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/notKamui/servmon/main/install.sh | sh
+```
+
 ## Creating a new service
 
 Here is a simple walkthrough to create a service which will host a static webpage.
