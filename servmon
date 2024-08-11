@@ -1,0 +1,88 @@
+#!/bin/sh
+
+action()
+{
+    printusage()
+    {
+        echo "Usage: $0 [list|start|stop|restart|status|edit|monitor|help] [service]"
+        echo "> list: list all known services (does not require a service name)"
+        echo "> start: starts the service"
+        echo "> stop: stops the service"
+        echo "> restart: restarts the service"
+        echo "> status: shows the status of the service"
+        echo "> edit: edits the service configuration"
+        echo "> monitor: uses lazydocker monitoring (lazydocker must be installed)"
+        echo "> help: shows this message"
+    }
+
+    if [ "$#" -eq 1 ]; then
+        if [ "$1" = "list" ]; then
+            for dir in $(ls -d ~/services/*); do
+                echo $(basename $dir)
+            done
+            return 0
+        elif [ "$1" = "monitor" ]; then
+            which lazydocker &> /dev/null
+            if [ $? -eq 1 ]; then
+                echo "lazydocker must be installed to use this command (https://github.com/jesseduffield/lazydocker)"
+                return 1
+            fi
+            lazydocker
+            return 0
+        elif [ "$1" = "help" ]; then
+            printusage
+            return 0
+        else
+            echo "Unknown command: $1"
+            printusage
+            return 1
+        fi
+    fi
+
+    if [ "$#" -ne 2 ]; then
+        echo "Invalid number of arguments: $#"
+        printusage
+        return 1
+    fi
+
+    if [ "$1" = "start" ]; then
+        subcmd=(up -d)
+    elif [ "$1" = "stop" ]; then
+        subcmd=(down)
+    elif [ "$1" = "restart" ]; then
+        subcmd=(restart)
+    elif [ "$1" = "status" ]; then
+        subcmd=(ps)
+    elif [ "$1" = "edit" ]; then
+        edit="true"
+    else
+        echo "Unknown action: $1"
+        printusage
+        return 1
+    fi
+
+    startdir=$PWD
+
+    cd $HOME/services/$2 &> /dev/null
+    if [ "$?" -ne 0 ]; then
+        echo "Unknown service: $2"
+        echo "'service list' to list all known services"
+        cd $startdir
+        return 1
+    fi
+
+    if [ "$edit" = "true" ]; then
+        nvim docker-compose.yml
+    else
+        docker compose ${subcmd[@]}
+        if [ "$?" -ne 0 ]; then
+            echo "Error: $subcmd failed"
+            cd $startdir
+            return 1
+        fi
+    fi
+
+    cd $startdir
+}
+
+action $@

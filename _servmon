@@ -1,0 +1,55 @@
+#compdef servmon
+
+_servmon_service_completion() {
+    services=()
+    for dir in $(ls -d ~/services/*); do
+        services+=$(basename $dir)
+    done
+    services=($services)
+
+    _alternative "args:command:(($services))"
+}
+
+_servmon() {
+    local program=servmon
+    typeset -A opt_args
+    local curcontext="$curcontext" state line context
+
+    # ---- Command:
+    _arguments -s \
+        '1: :->cmd' \
+        '*: :->args' &&
+        ret=0
+
+    case $state in
+    cmd)
+        main_commands=(
+            'list\:"Show all available services" '
+            'start\:"Start a service" '
+            'stop\:"Stop a service" '
+            'restart\:"Restart a service" '
+            'status\:"Shows the status of a service" '
+            'edit\:"Edit a service configuration" '
+            'monitor\:"Monitor the services (lazydocker must be installed)" '
+            'help\:"Show all supported flags and commands" '
+        )
+        main_commands=($main_commands)
+        _alternative "args:command:(($main_commands))"
+
+        ;;
+    args)
+        case $line[1] in
+        start|stop|restart|status|edit)
+            _servmon_service_completion
+            
+            ;;
+        esac
+        ;;
+    esac
+}
+
+if ! command -v compinit >/dev/null; then
+    autoload -U compinit && compinit
+fi
+
+compdef _servmon servmon

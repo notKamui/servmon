@@ -1,0 +1,42 @@
+version: "3"
+services:
+  reverse-proxy:
+    image: nginxproxy/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - nginx-proxy-html:/usr/share/nginx/html/
+      - nginx-proxy-vhost:/etc/nginx/vhost.d/
+      - /etc/letsencrypt/certs/:/etc/nginx/certs/:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - dhparam:/etc/nginx/dhparam
+    restart: always
+    networks:
+      - web-proxy
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+    volumes:
+      - nginx-proxy-html:/usr/share/nginx/html/
+      - nginx-proxy-vhost:/etc/nginx/vhost.d/
+      - /etc/letsencrypt/certs/:/etc/nginx/certs/:rw
+      - acme-companion-state:/etc/acme.sh/
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    networks:
+      - web-proxy
+
+volumes:
+  nginx-proxy-html:
+  nginx-proxy-vhost:
+  acme-companion-state:
+  dhparam:
+
+networks:
+  web-proxy:
+    name: web-proxy
