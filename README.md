@@ -3,7 +3,7 @@
 Install using curl:
 
 ```sh
-curl -fsSL https://servmon.notkamui.com/install.sh
+curl -fsSL https://servmon.notkamui.com/install.sh | sh
 ```
 
 ## Help
