@@ -1,6 +1,10 @@
 # servmon
 
-Install using curl:
+A simple utility script (with autocompletion) to manage your services with docker, with automatic SSL certificates.
+
+## Installing and updating
+
+Install (or update) using curl:
 
 ```sh
 curl -fsSL https://servmon.notkamui.com/install.sh | sh
